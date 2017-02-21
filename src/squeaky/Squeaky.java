@@ -388,7 +388,7 @@ public class Squeaky extends javax.swing.JFrame {
             }
             bout.close();
             fout.close();
-            //f.delete();
+            f.delete();
             task.cancel();
             jTextArea1.append("\nOperation completed in " + milliseconds + " ms");
         } catch (IOException ex) {
