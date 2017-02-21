@@ -210,7 +210,7 @@ public class Squeaky extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         jPanel1Layout.setVerticalGroup(
@@ -231,7 +231,7 @@ public class Squeaky extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
@@ -244,7 +244,7 @@ public class Squeaky extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -262,9 +262,10 @@ public class Squeaky extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        jTextArea1.append("\n\n\n\nStart of process");
         if (jRadioButton1.isSelected()) {
             int tot = jList1.getSelectedValuesList().size();
-            jTextArea1.setText("Cleaning " + tot + " drives");
+            jTextArea1.append("\n\nCleaning " + tot + " drives");
             try {
                 for (int z = 0; z < Integer.parseInt(jTextField1.getText().trim()); z++) {
                     int i = 0;
@@ -304,30 +305,12 @@ public class Squeaky extends javax.swing.JFrame {
         } else if (jRadioButton2.isSelected()) {
             File f = new File(jTextField2.getText());
             if (f.exists()) {
-                try {
-                    long l = f.length();
-                    jTextArea1.setText("Cleaning "+f.getCanonicalPath()+" of "+Double.toString((double)l/1024)+" KB");
-                    milliseconds = 0;
-                    task = new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            milliseconds++;
-                        }
-                    };
-                    timer.scheduleAtFixedRate(task, 0, 1);                    
-                    FileOutputStream fout = new FileOutputStream(f);
-                    BufferedOutputStream bout = new BufferedOutputStream(fout);
-                    long i = 0;
-                    while (i < l) {
-                        bout.write(0);
-                        i++;
+                if (f.isFile()) {
+                    process(f);
+                } else if (f.isDirectory()) {
+                    for (File x : f.listFiles()) {
+                        process(x);
                     }
-                    bout.close();
-                    task.cancel();
-                    jTextArea1.append("\nOperation completed in " + milliseconds + " ms");
-                } catch (IOException ex) {
-                    task.cancel();
-                    showException(ex);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
@@ -382,6 +365,36 @@ public class Squeaky extends javax.swing.JFrame {
         jFrame1.setAlwaysOnTop(true);
         jFrame1.setVisible(true);
         jFrame1.setAlwaysOnTop(false);
+    }
+
+    private void process(File f) {
+        try {
+            long l = f.length();
+            jTextArea1.append("\n\nCleaning " + f.getCanonicalPath() + " of " + l + " Bytes");
+            milliseconds = 0;
+            task = new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    milliseconds++;
+                }
+            };
+            timer.scheduleAtFixedRate(task, 0, 1);
+            FileOutputStream fout = new FileOutputStream(f);
+            BufferedOutputStream bout = new BufferedOutputStream(fout);
+            long i = 0;
+            while (i < l) {
+                bout.write(0);
+                i++;
+            }
+            bout.close();
+            fout.close();
+            //f.delete();
+            task.cancel();
+            jTextArea1.append("\nOperation completed in " + milliseconds + " ms");
+        } catch (IOException ex) {
+            task.cancel();
+            showException(ex);
+        }
     }
 
     /**
