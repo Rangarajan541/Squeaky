@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -24,6 +22,7 @@ public class Squeaky extends javax.swing.JFrame {
     private TimerTask task;
     private long milliseconds = 0;
     private boolean firstExecution = true;
+    private static Squeaky mainFrame;
 
     @SuppressWarnings("unchecked")
     public Squeaky() {
@@ -396,7 +395,7 @@ public class Squeaky extends javax.swing.JFrame {
                 bout.write(0);
                 i++;
             }
-            jTextArea1.append("\n\t\t\tFile:"+f.getCanonicalPath()+" Overwritten");
+            jTextArea1.append("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
             bout.close();
             fout.close();
             //f.delete();
@@ -422,11 +421,7 @@ public class Squeaky extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -437,11 +432,11 @@ public class Squeaky extends javax.swing.JFrame {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Squeaky.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>        //</editor-fold>        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Squeaky().setVisible(true);
+                mainFrame = new Squeaky();
+                mainFrame.setVisible(true);
             }
         });
     }
