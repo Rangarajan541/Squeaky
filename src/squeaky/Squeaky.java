@@ -1,12 +1,18 @@
 package squeaky;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -23,7 +29,7 @@ public class Squeaky extends javax.swing.JFrame {
     public Squeaky() {
         timer = new java.util.Timer();
         initComponents();
-        
+
         jRadioButton1.doClick();
         jFrame1.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         jFrame1.pack();
@@ -150,6 +156,8 @@ public class Squeaky extends javax.swing.JFrame {
         jTextArea1.setRows(5);
         jScrollPane2.setViewportView(jTextArea1);
 
+        jTextField1.setText("1");
+
         jLabel1.setText("No. of Passes (Integer):");
 
         jButton4.setText("Browse for File");
@@ -254,43 +262,76 @@ public class Squeaky extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        int tot = jList1.getSelectedValuesList().size();
-        jTextArea1.setText("Cleaning " + tot + " drives");
-        try {
-            for (int z = 0; z < Integer.parseInt(jTextField1.getText().trim()); z++) {
-                int i = 0;
-                for (String x : jList1.getSelectedValuesList()) {
+        if (jRadioButton1.isSelected()) {
+            int tot = jList1.getSelectedValuesList().size();
+            jTextArea1.setText("Cleaning " + tot + " drives");
+            try {
+                for (int z = 0; z < Integer.parseInt(jTextField1.getText().trim()); z++) {
+                    int i = 0;
+                    for (String x : jList1.getSelectedValuesList()) {
+                        milliseconds = 0;
+                        task = new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                milliseconds++;
+                            }
+                        };
+                        timer.scheduleAtFixedRate(task, 0, 1);
+                        i++;
+                        jTextArea1.append("\n\nCleaning " + x + " (" + i + " of " + tot + ")");
+                        File f = new File(x);
+                        File out = new File(x + "out");
+                        if (out.exists()) {
+                            out.delete();
+                            out.createNewFile();
+                        }
+                        long usable = f.getFreeSpace();
+                        jTextArea1.append("\nCleaning " + Double.toString(usable / 1024 / 1024 / 1024) + " GB");
+                        try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) {
+                            raf.seek(usable - 1);
+                            raf.write(0);
+                        }
+                        out.delete();
+                        task.cancel();
+                        jTextArea1.append("\nOperation completed in " + milliseconds + " ms");
+                    }
+                }
+            } catch (IOException ex) {
+                task.cancel();
+                showException(ex);
+
+            }
+        } else if (jRadioButton2.isSelected()) {
+            File f = new File(jTextField2.getText());
+            if (f.exists()) {
+                try {
+                    long l = f.length();
+                    jTextArea1.setText("Cleaning "+f.getCanonicalPath()+" of "+Double.toString((double)l/1024)+" KB");
+                    milliseconds = 0;
                     task = new java.util.TimerTask() {
                         @Override
                         public void run() {
                             milliseconds++;
                         }
                     };
-                    timer.scheduleAtFixedRate(task, 0, 1);
-                    i++;
-                    jTextArea1.append("\n\nCleaning " + x + " (" + i + " of " + tot + ")");
-                    File f = new File(x);
-                    File out = new File(x + "out");
-                    if (out.exists()) {
-                        out.delete();
-                        out.createNewFile();
+                    timer.scheduleAtFixedRate(task, 0, 1);                    
+                    FileOutputStream fout = new FileOutputStream(f);
+                    BufferedOutputStream bout = new BufferedOutputStream(fout);
+                    long i = 0;
+                    while (i < l) {
+                        bout.write(0);
+                        i++;
                     }
-                    long usable = f.getFreeSpace();
-                    jTextArea1.append("\nCleaning " + Double.toString(usable / 1024 / 1024 / 1024) + " GB");
-                    try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) {
-                        raf.seek(usable - 1);
-                        raf.write(0);
-                    }
-                    out.delete();
+                    bout.close();
                     task.cancel();
                     jTextArea1.append("\nOperation completed in " + milliseconds + " ms");
-                    milliseconds = 0;
+                } catch (IOException ex) {
+                    task.cancel();
+                    showException(ex);
                 }
+            } else {
+                JOptionPane.showMessageDialog(this, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (IOException ex) {
-            task.cancel();
-            showException(ex);
-
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -308,10 +349,9 @@ public class Squeaky extends javax.swing.JFrame {
             f = jFileChooser1.getSelectedFile();
         }
         try {
-            if (f!=null) {
+            if (f != null) {
                 jTextField2.setText(f.getCanonicalPath());
-            }
-            else{
+            } else {
                 jTextField2.setText("No File Selected");
             }
         } catch (IOException ex) {
