@@ -21,6 +21,7 @@ public class Squeaky extends javax.swing.JFrame {
     private java.util.Timer timer;
     private TimerTask task;
     private long milliseconds = 0;
+    private boolean firstExecution=true;
 
     @SuppressWarnings("unchecked")
     public Squeaky() {
@@ -259,22 +260,19 @@ public class Squeaky extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        jTextArea1.append("\n\n\n\nStart of process");
+        if(!firstExecution)jTextArea1.append("\n\n");
+        firstExecution=false;
+        jTextArea1.append("Start of process");
         if (jRadioButton1.isSelected()) {
             int tot = jList1.getSelectedValuesList().size();
-            jTextArea1.append("\n\nCleaning " + tot + " drives");
+            jTextArea1.append("\nCleaning " + tot + " drives");
             try {
                 for (int z = 0; z < Integer.parseInt(jTextField1.getText().trim()); z++) {
+                    jTextArea1.append("\n\nPass " + Integer.toString(z + 1));
                     int i = 0;
                     for (String x : jList1.getSelectedValuesList()) {
                         milliseconds = 0;
-                        task = new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                milliseconds++;
-                            }
-                        };
-                        timer.scheduleAtFixedRate(task, 0, 1);
+                        startTimer();
                         i++;
                         jTextArea1.append("\n\nCleaning " + x + " (" + i + " of " + tot + ")");
                         File f = new File(x);
@@ -314,6 +312,7 @@ public class Squeaky extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
             }
         }
+        jTextArea1.append("\n\nEnd of Process\n________");
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -393,6 +392,16 @@ public class Squeaky extends javax.swing.JFrame {
             task.cancel();
             showException(ex);
         }
+    }
+
+    private void startTimer() {
+        task = new java.util.TimerTask() {
+            @Override
+            public void run() {
+                milliseconds++;
+            }
+        };
+        timer.scheduleAtFixedRate(task, 0, 1);
     }
 
     /**
