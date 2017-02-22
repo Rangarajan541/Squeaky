@@ -10,7 +10,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -43,84 +42,7 @@ public class Squeaky extends javax.swing.JFrame {
                 showException(ex);
             }
         }
-        t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int totalPasses = Integer.parseInt(jTextField1.getText().trim());
-            if (!firstExecution) {
-                report("\n\n");
-            }
-            firstExecution = false;
-            report("Start of process");
-            for (int z = 0; z < totalPasses; z++) {
-                report("\n\n\tPass " + Integer.toString(z + 1));
-                if (jRadioButton1.isSelected()) {
-                    int tot = jList1.getSelectedValuesList().size();
-                    report("\n\tCleaning " + tot + " drives");
-                    try {
-                        int i = 0;
-                        for (String x : jList1.getSelectedValuesList()) {
-                            milliseconds = 0;
-                            startTimer();
-                            i++;
-                            report("\n\n\t\tCleaning " + x + " (" + i + " of " + tot + ")");
-                            File f = new File(x);
-                            File out = new File(x + "out");
-                            if (out.exists()) {
-                                out.delete();
-                                out.createNewFile();
-                            }
-                            long usable = f.getFreeSpace();
-                            report("\n\t\tCleaning " + Double.toString(usable / 1024 / 1024 / 1024) + " GB");
-                            try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) {
-                                raf.seek(usable - 1);
-                                raf.write(0);
-                            }
-                            out.delete();
-                            task.cancel();
-                            report("\n\t\tOperation completed in " + milliseconds + " ms");
-                        }
-                    } catch (IOException ex) {
-                        task.cancel();
-                        showException(ex);
-                    }
-                } else if (jRadioButton2.isSelected()) {
-                    File f = new File(jTextField2.getText());
-                    if (f.exists()) {
-                        if (f.isFile()) {
-                            report("\n\tFile Selected.");
-                            process(f);
-                        } else if (f.isDirectory()) {
-                            report("\n\tFolder Selected.");
-                            for (File x : f.listFiles()) {
-                                process(x);
-                                if (z == (totalPasses - 1)) {
-                                    if (x.delete()) {
-                                        try {
-                                            report("\n\t\t\t\tFile:" + x.getCanonicalPath() + " deleted");
-                                        } catch (IOException ex) {
-                                            showException(ex);
-                                        }
-                                    }
-                                }
-                            }
-                            if (f.delete()) {
-                                try {
-                                    report("\n\tFolder:" + f.getCanonicalPath() + " deleted");
-                                } catch (IOException ex) {
-                                    showException(ex);
-                                }
-                            }
-                        }
-                    } else {
-                        JOptionPane.showMessageDialog(mainFrame, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-            report("\n\nEnd of Process\n________");
-            jButton1.setEnabled(true);
-            }
-        });
+
     }
 
     /**
@@ -353,6 +275,84 @@ public class Squeaky extends javax.swing.JFrame {
         int option = JOptionPane.showConfirmDialog(this, "Proceeding will permanently delete the file/directory selected.\nThere is no way to reverse this.\nAre you sure?", "Confirm Action", JOptionPane.WARNING_MESSAGE);
         if (option == JOptionPane.YES_OPTION) {
             jButton1.setEnabled(false);
+            t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int totalPasses = Integer.parseInt(jTextField1.getText().trim());
+                    if (!firstExecution) {
+                        report("\n\n");
+                    }
+                    firstExecution = false;
+                    report("Start of process");
+                    for (int z = 0; z < totalPasses; z++) {
+                        report("\n\n\tPass " + Integer.toString(z + 1));
+                        if (jRadioButton1.isSelected()) {
+                            int tot = jList1.getSelectedValuesList().size();
+                            report("\n\tCleaning " + tot + " drives");
+                            try {
+                                int i = 0;
+                                for (String x : jList1.getSelectedValuesList()) {
+                                    milliseconds = 0;
+                                    startTimer();
+                                    i++;
+                                    report("\n\n\t\tCleaning " + x + " (" + i + " of " + tot + ")");
+                                    File f = new File(x);
+                                    File out = new File(x + "out");
+                                    if (out.exists()) {
+                                        out.delete();
+                                        out.createNewFile();
+                                    }
+                                    long usable = f.getFreeSpace();
+                                    report("\n\t\tCleaning " + Double.toString(usable / 1024 / 1024 / 1024) + " GB");
+                                    try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) {
+                                        raf.seek(usable - 1);
+                                        raf.write(0);
+                                    }
+                                    out.delete();
+                                    task.cancel();
+                                    report("\n\t\tOperation completed in " + milliseconds + " ms");
+                                }
+                            } catch (IOException ex) {
+                                task.cancel();
+                                showException(ex);
+                            }
+                        } else if (jRadioButton2.isSelected()) {
+                            File f = new File(jTextField2.getText());
+                            if (f.exists()) {
+                                if (f.isFile()) {
+                                    report("\n\tFile Selected.");
+                                    process(f);
+                                } else if (f.isDirectory()) {
+                                    report("\n\tFolder Selected.");
+                                    for (File x : f.listFiles()) {
+                                        process(x);
+                                        if (z == (totalPasses - 1)) {
+                                            if (x.delete()) {
+                                                try {
+                                                    report("\n\t\t\t\tFile:" + x.getCanonicalPath() + " deleted");
+                                                } catch (IOException ex) {
+                                                    showException(ex);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (f.delete()) {
+                                        try {
+                                            report("\n\tFolder:" + f.getCanonicalPath() + " deleted");
+                                        } catch (IOException ex) {
+                                            showException(ex);
+                                        }
+                                    }
+                                }
+                            } else {
+                                JOptionPane.showMessageDialog(mainFrame, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                    report("\n\nEnd of Process\n________");
+                    jButton1.setEnabled(true);
+                }
+            });
             t1.start();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -445,12 +445,12 @@ public class Squeaky extends javax.swing.JFrame {
     }
 
     private void report(String a) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                jTextArea1.append(a);
-            }
-        });
+        //SwingUtilities.invokeLater(new Runnable() {
+        //   @Override
+        //    public void run() {
+        jTextArea1.append(a);
+        //    }
+        //});
     }
 
     /**
