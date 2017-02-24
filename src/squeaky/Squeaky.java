@@ -27,13 +27,13 @@ public class Squeaky extends javax.swing.JFrame {
 
     @SuppressWarnings("unchecked")
     public Squeaky() {
-        timer = new java.util.Timer();
         initComponents();
         jRadioButton1.doClick();
+        setLocationRelativeTo(null);
+        timer = new java.util.Timer();
         jFrame1.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         jFrame1.pack();
         jFrame1.setLocationRelativeTo(null);
-        this.setLocationRelativeTo(null);
         DefaultListModel m = (DefaultListModel) jList1.getModel();
         for (File f : File.listRoots()) {
             try {
@@ -42,7 +42,6 @@ public class Squeaky extends javax.swing.JFrame {
                 showException(ex);
             }
         }
-
     }
 
     /**
@@ -138,6 +137,7 @@ public class Squeaky extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Squeaky");
+        setForeground(java.awt.Color.white);
 
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
 
@@ -271,7 +271,6 @@ public class Squeaky extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
         int option = JOptionPane.showConfirmDialog(this, "Proceeding will permanently delete the file/directory selected.\nThere is no way to reverse this.\nAre you sure?", "Confirm Action", JOptionPane.WARNING_MESSAGE);
         if (option == JOptionPane.YES_OPTION) {
             jButton1.setEnabled(false);
@@ -358,12 +357,10 @@ public class Squeaky extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
         jFrame1.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
         File f = null;
         int val = jFileChooser1.showOpenDialog(this);
         if (val == JFileChooser.APPROVE_OPTION) {
@@ -381,21 +378,19 @@ public class Squeaky extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-        // TODO add your handling code here:
         jList1.setEnabled(true);
         jTextField2.setEnabled(false);
         jButton4.setEnabled(false);
     }//GEN-LAST:event_jRadioButton1ActionPerformed
 
     private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-        // TODO add your handling code here:
+
         jList1.setEnabled(false);
         jTextField2.setEnabled(true);
         jButton4.setEnabled(true);
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
         jTextArea1.setText(null);
         firstExecution = true;
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -425,7 +420,6 @@ public class Squeaky extends javax.swing.JFrame {
             report("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
             bout.close();
             fout.close();
-            //f.delete();
             task.cancel();
             report("\n\t\t\tOperation completed in " + milliseconds + " ms");
         } catch (IOException ex) {
@@ -445,19 +439,13 @@ public class Squeaky extends javax.swing.JFrame {
     }
 
     private void report(String a) {
-        //SwingUtilities.invokeLater(new Runnable() {
-        //   @Override
-        //    public void run() {
         jTextArea1.append(a);
-        //    }
-        //});
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
