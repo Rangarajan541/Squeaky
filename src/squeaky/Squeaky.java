@@ -410,16 +410,14 @@ public class Squeaky extends javax.swing.JFrame {
             report("\n\n\t\t\tCleaning " + f.getCanonicalPath() + " of " + l + " Bytes");
             milliseconds = 0;
             startTimer();
-            FileOutputStream fout = new FileOutputStream(f);
-            BufferedOutputStream bout = new BufferedOutputStream(fout);
-            long i = 0;
-            while (i < l) {
-                bout.write(0);
-                i++;
+            try (FileOutputStream fout = new FileOutputStream(f); BufferedOutputStream bout = new BufferedOutputStream(fout)) {
+                long i = 0;
+                while (i < l) {
+                    bout.write(0);
+                    i++;
+                }
+                report("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
             }
-            report("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
-            bout.close();
-            fout.close();
             task.cancel();
             report("\n\t\t\tOperation completed in " + milliseconds + " ms");
         } catch (IOException ex) {
