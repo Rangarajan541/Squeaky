@@ -21,10 +21,9 @@ public class Squeaky extends javax.swing.JFrame {
 
     private java.util.Timer timer;
     private TimerTask task;
-    private long milliseconds = 0;
     private boolean firstExecution = true;
-    private static Squeaky mainFrame;
     private Thread t1;
+    private long milliseconds=0;
 
     @SuppressWarnings("unchecked")
     public Squeaky() {
@@ -279,7 +278,7 @@ private void enableGUI(boolean enabled) {
         int option = JOptionPane.showConfirmDialog(this, "Proceeding will permanently delete the file/directory selected.\nThere is no way to reverse this.\nAre you sure?", "Confirm Action", JOptionPane.WARNING_MESSAGE);
         if (option == JOptionPane.YES_OPTION) {
             enableGUI(false);
-            t1 = new Thread(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     int totalPasses = Integer.parseInt(jTextField1.getText().trim());
@@ -292,15 +291,17 @@ private void enableGUI(boolean enabled) {
                         report("\n\n\tPass " + Integer.toString(z + 1));
                         if (jRadioButton1.isSelected()) {
                             for (String x : jList1.getSelectedValuesList()) {
-                                long tempBytes = (long) Math.ceil(new File(x).getUsableSpace() / 5);
+                                long tempBytes = 500000;//(long) Math.ceil(new File(x).getUsableSpace() / 5);
                                 report("\n\t\tCleaning " + x + " Usable: " + (tempBytes * 5) + ", Unit space: " + tempBytes);
-                                for (int i = 0; i < 5; i++) {
+                                for (int i = 1; i <= 5; i++) {
                                     final int loopCount = i;
                                     final String drive = x;
+                                    Squeaky wiperObject=new Squeaky();
+                                    wiperObject.startTimer();
                                     new Thread(
                                             new Runnable() {
                                         @Override
-                                        public void run() {
+                                        public void run() {                                            
                                             File tempFile = new File(drive + "out" + loopCount);
                                             if (tempFile.exists()) {
                                                 try {
@@ -319,43 +320,14 @@ private void enableGUI(boolean enabled) {
                                                 showException(ex);
                                                 return;
                                             }
-
+                                            report("\n\t\t\tThread "+loopCount+" completed.");
+                                            wiperObject.stopTimer();
                                         }
                                     }
                                     ).start();
                                     report("\n\t\t\tThread " + i + " started");
                                 }
                             }
-                            /*
-                            int tot = jList1.getSelectedValuesList().size();
-                            report("\n\tCleaning " + tot + " drives");
-                            try {
-                                int i = 0;
-                                for (String x : jList1.getSelectedValuesList()) {
-                                    milliseconds = 0;
-                                    startTimer();
-                                    i++;
-                                    report("\n\n\t\tCleaning " + x + " (" + i + " of " + tot + ")");
-                                    File f = new File(x);
-                                    File out = new File(x + "out");
-                                    if (out.exists()) {
-                                        out.delete();
-                                        out.createNewFile();
-                                    }
-                                    long usable = f.getFreeSpace();
-                                    report("\n\t\tCleaning " + Double.toString(usable / 1024 / 1024 / 1024) + " GB");
-                                    try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) {
-                                        raf.seek(usable - 1);
-                                        raf.write(0);
-                                    }
-                                    out.delete();
-                                    task.cancel();
-                                    report("\n\t\tOperation completed in " + milliseconds + " ms");
-                                }
-                            } catch (IOException ex) {
-                                task.cancel();
-                                showException(ex);
-                            }*/
                         } else if (jRadioButton2.isSelected()) {
                             File f = new File(jTextField2.getText());
                             if (f.exists()) {
@@ -385,14 +357,14 @@ private void enableGUI(boolean enabled) {
                                     }
                                 }
                             } else {
-                                JOptionPane.showMessageDialog(mainFrame, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(Squeaky.this, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     }
-                    report("\n\nEnd of Process\n________");
+                    //report("\n\nEnd of Process\n________");
                     enableGUI(true);
                 }
-            });
+            }).start();
             t1.start();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -449,8 +421,8 @@ private void enableGUI(boolean enabled) {
         try {
             long l = f.length();
             report("\n\n\t\t\tCleaning " + f.getCanonicalPath() + " of " + l + " Bytes");
-            milliseconds = 0;
-            startTimer();
+            Squeaky processObject=new Squeaky();
+            processObject.startTimer();
             try (FileOutputStream fout = new FileOutputStream(f); BufferedOutputStream bout = new BufferedOutputStream(fout)) {
                 long i = 0;
                 while (i < l) {
@@ -459,8 +431,7 @@ private void enableGUI(boolean enabled) {
                 }
                 report("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
             }
-            task.cancel();
-            report("\n\t\t\tOperation completed in " + milliseconds + " ms");
+            processObject.stopTimer();
         } catch (IOException ex) {
             task.cancel();
             showException(ex);
@@ -472,13 +443,19 @@ private void enableGUI(boolean enabled) {
     }
 
     private void startTimer() {
-        task = new java.util.TimerTask() {
+        this.milliseconds = 0;
+        this.task = new java.util.TimerTask() {
             @Override
             public void run() {
-                milliseconds++;
+                Squeaky.this.milliseconds++;
             }
         };
         timer.scheduleAtFixedRate(task, 0, 1);
+    }
+
+    private void stopTimer() {        
+        report("\n\t\t\tOperation completed in " + this.milliseconds + " ms");
+        this.task.cancel();
     }
 
     private void report(String a) {
@@ -502,8 +479,7 @@ private void enableGUI(boolean enabled) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                mainFrame = new Squeaky();
-                mainFrame.setVisible(true);
+                new Squeaky().setVisible(true);
             }
         });
     }
