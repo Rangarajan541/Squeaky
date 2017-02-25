@@ -1,11 +1,9 @@
 package squeaky;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.TimerTask;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -365,7 +363,6 @@ private void enableGUI(boolean enabled) {
                     enableGUI(true);
                 }
             }).start();
-            t1.start();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -468,7 +465,7 @@ private void enableGUI(boolean enabled) {
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
