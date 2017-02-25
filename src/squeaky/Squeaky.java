@@ -20,14 +20,13 @@ public class Squeaky extends javax.swing.JFrame {
     private java.util.Timer timer;
     private TimerTask task;
     private boolean firstExecution = true;
-    private Thread t1;
-    private long milliseconds=0;
+    private long milliseconds = 0;
 
     @SuppressWarnings("unchecked")
     public Squeaky() {
         initComponents();
         jRadioButton1.doClick();
-        setLocationRelativeTo(null);
+
         timer = new java.util.Timer();
         jFrame1.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         jFrame1.pack();
@@ -289,17 +288,17 @@ private void enableGUI(boolean enabled) {
                         report("\n\n\tPass " + Integer.toString(z + 1));
                         if (jRadioButton1.isSelected()) {
                             for (String x : jList1.getSelectedValuesList()) {
-                                long tempBytes = 500000;//(long) Math.ceil(new File(x).getUsableSpace() / 5);
+                                long tempBytes = (long) Math.ceil(new File(x).getUsableSpace() / 5);
                                 report("\n\t\tCleaning " + x + " Usable: " + (tempBytes * 5) + ", Unit space: " + tempBytes);
                                 for (int i = 1; i <= 5; i++) {
                                     final int loopCount = i;
                                     final String drive = x;
-                                    Squeaky wiperObject=new Squeaky();
+                                    Squeaky wiperObject = new Squeaky();
                                     wiperObject.startTimer();
                                     new Thread(
                                             new Runnable() {
                                         @Override
-                                        public void run() {                                            
+                                        public void run() {
                                             File tempFile = new File(drive + "out" + loopCount);
                                             if (tempFile.exists()) {
                                                 try {
@@ -318,12 +317,13 @@ private void enableGUI(boolean enabled) {
                                                 showException(ex);
                                                 return;
                                             }
-                                            report("\n\t\t\tThread "+loopCount+" completed.");
-                                            wiperObject.stopTimer();
+                                            report("\n\t\t\tThread " + loopCount + " completed.");
+                                            report("\n\t\t\tOperation completed in " + wiperObject.milliseconds + " ms");
+                                            wiperObject.task.cancel();
                                         }
                                     }
                                     ).start();
-                                    report("\n\t\t\tThread " + i + " started");
+                                    report("\n\n\t\t\tThread " + i + " started");
                                 }
                             }
                         } else if (jRadioButton2.isSelected()) {
@@ -357,9 +357,10 @@ private void enableGUI(boolean enabled) {
                             } else {
                                 JOptionPane.showMessageDialog(Squeaky.this, "The file specified does not exist.", "File Not Found", JOptionPane.ERROR_MESSAGE);
                             }
+                            report("\n\nEnd of Process\n________");
                         }
                     }
-                    //report("\n\nEnd of Process\n________");
+
                     enableGUI(true);
                 }
             }).start();
@@ -418,7 +419,7 @@ private void enableGUI(boolean enabled) {
         try {
             long l = f.length();
             report("\n\n\t\t\tCleaning " + f.getCanonicalPath() + " of " + l + " Bytes");
-            Squeaky processObject=new Squeaky();
+            Squeaky processObject = new Squeaky();
             processObject.startTimer();
             try (FileOutputStream fout = new FileOutputStream(f); BufferedOutputStream bout = new BufferedOutputStream(fout)) {
                 long i = 0;
@@ -428,31 +429,23 @@ private void enableGUI(boolean enabled) {
                 }
                 report("\n\t\t\tFile:" + f.getCanonicalPath() + " Overwritten");
             }
-            processObject.stopTimer();
+            report("\n\t\t\tOperation completed in " + processObject.milliseconds + " ms");
+            processObject.task.cancel();
         } catch (IOException ex) {
             task.cancel();
             showException(ex);
         }
     }
 
-    private void driveWipe(File x, long bytes) {
-
-    }
-
     private void startTimer() {
         this.milliseconds = 0;
-        this.task = new java.util.TimerTask() {
+        task = new java.util.TimerTask() {
             @Override
             public void run() {
                 Squeaky.this.milliseconds++;
             }
         };
         timer.scheduleAtFixedRate(task, 0, 1);
-    }
-
-    private void stopTimer() {        
-        report("\n\t\t\tOperation completed in " + this.milliseconds + " ms");
-        this.task.cancel();
     }
 
     private void report(String a) {
@@ -476,7 +469,9 @@ private void enableGUI(boolean enabled) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Squeaky().setVisible(true);
+                Squeaky m = new Squeaky();
+                m.setLocationRelativeTo(null);
+                m.setVisible(true);
             }
         });
     }
