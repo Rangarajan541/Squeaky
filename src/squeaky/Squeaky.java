@@ -1,6 +1,7 @@
 package squeaky;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -269,11 +270,15 @@ public class Squeaky extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+private void enableGUI(boolean enabled) {
+        jButton1.setEnabled(enabled);
+        jRadioButton1.setEnabled(enabled);
+        jRadioButton2.setEnabled(enabled);
+    }
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         int option = JOptionPane.showConfirmDialog(this, "Proceeding will permanently delete the file/directory selected.\nThere is no way to reverse this.\nAre you sure?", "Confirm Action", JOptionPane.WARNING_MESSAGE);
         if (option == JOptionPane.YES_OPTION) {
-            jButton1.setEnabled(false);
+            enableGUI(false);
             t1 = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -286,6 +291,42 @@ public class Squeaky extends javax.swing.JFrame {
                     for (int z = 0; z < totalPasses; z++) {
                         report("\n\n\tPass " + Integer.toString(z + 1));
                         if (jRadioButton1.isSelected()) {
+                            for (String x : jList1.getSelectedValuesList()) {
+                                long tempBytes = (long) Math.ceil(new File(x).getUsableSpace() / 5);
+                                report("\n\t\tCleaning " + x + " Usable: " + (tempBytes * 5) + ", Unit space: " + tempBytes);
+                                for (int i = 0; i < 5; i++) {
+                                    final int loopCount = i;
+                                    final String drive = x;
+                                    new Thread(
+                                            new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            File tempFile = new File(drive + "out" + loopCount);
+                                            if (tempFile.exists()) {
+                                                try {
+                                                    tempFile.delete();
+                                                    tempFile.createNewFile();
+                                                } catch (IOException ex) {
+                                                    showException(ex);
+                                                    return;
+                                                }
+                                            }
+                                            try (BufferedOutputStream bout = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                                                for (int i = 0; i < tempBytes; i++) {
+                                                    bout.write(0);
+                                                }
+                                            } catch (IOException ex) {
+                                                showException(ex);
+                                                return;
+                                            }
+
+                                        }
+                                    }
+                                    ).start();
+                                    report("\n\t\t\tThread " + i + " started");
+                                }
+                            }
+                            /*
                             int tot = jList1.getSelectedValuesList().size();
                             report("\n\tCleaning " + tot + " drives");
                             try {
@@ -314,7 +355,7 @@ public class Squeaky extends javax.swing.JFrame {
                             } catch (IOException ex) {
                                 task.cancel();
                                 showException(ex);
-                            }
+                            }*/
                         } else if (jRadioButton2.isSelected()) {
                             File f = new File(jTextField2.getText());
                             if (f.exists()) {
@@ -349,7 +390,7 @@ public class Squeaky extends javax.swing.JFrame {
                         }
                     }
                     report("\n\nEnd of Process\n________");
-                    jButton1.setEnabled(true);
+                    enableGUI(true);
                 }
             });
             t1.start();
@@ -424,6 +465,10 @@ public class Squeaky extends javax.swing.JFrame {
             task.cancel();
             showException(ex);
         }
+    }
+
+    private void driveWipe(File x, long bytes) {
+
     }
 
     private void startTimer() {
