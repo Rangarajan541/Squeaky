@@ -606,7 +606,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                 File drive = (File) jTable2.getValueAt(selectedRow, 0);
                 try {
                     String x = drive.getCanonicalPath().replace("\\", "/");
-                    driveTotalBytes = 1073741824;//drive.getUsableSpace();
+                    driveTotalBytes = drive.getUsableSpace();
                     long threadBytes = (long) Math.ceil((double) driveTotalBytes / userSettingThreads);
                     for (int i = 0; i < userSettingThreads; i++) {
                         final int threadIndex = i;
@@ -616,7 +616,8 @@ public class SqueakyForm extends javax.swing.JFrame {
                             public void run() {
                                 ThreadLong tLong = new ThreadLong();
                                 THREADLONGS.add(tLong);
-                                try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(new File(driveDir + "Thread" + threadIndex)), 16384)) {
+                                File tempFile = new File(driveDir + "Thread" + threadIndex);
+                                try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile), 16384)) {
                                     for (int o = 0; o < threadBytes; o++) {
                                         threadWriter.write(0);
                                         tLong.incrementBytes();
@@ -624,6 +625,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                                             break;
                                         }
                                     }
+                                    tempFile.delete();
                                 } catch (IOException ex) {
                                     handle(ex);
                                 }
