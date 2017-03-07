@@ -38,6 +38,7 @@ public class SqueakyForm extends javax.swing.JFrame {
     private static final ArrayList<JComponent> ADVANCEDUIELEMENTS = new ArrayList<>(5);
     private static final ArrayList<CountMS> COUNTOBJECTS = new ArrayList<>(5);
     private static final ArrayList<Thread> FILETHREADS = new ArrayList<>(3);
+    private static final ArrayList<ThreadLong> THREADLONGS = new ArrayList<>(3);
     private static final java.util.Timer TIMER = new java.util.Timer();
     private static final CountMS OBJECT = new CountMS();
 
@@ -577,10 +578,14 @@ public class SqueakyForm extends javax.swing.JFrame {
                 updateDriveUITask = new TimerTask() {
                     @Override
                     public void run() {
+                        driveBytesDone = 0;
+                        for (ThreadLong x : THREADLONGS) {
+                            driveBytesDone += x.getBytes();
+                        }
                         jProgressBar3.setValue((int) (driveBytesDone * 100 / driveTotalBytes));
                         if (driveBytesDone >= driveTotalBytes) {
                             long ms = OBJECT.stopTimer();
-                            jTable2.setValueAt("Cleared " + Double.toString(driveTotalBytes / 1024 / 1024 / 1024) + " GB (" + driveTotalBytes + " Bytes) in " + (ms / 1000 / 60) + " minutes. (" + ms + " ms)", selectedRow, 1);
+                            jTable2.setValueAt("Cleared " + Double.toString(driveBytesDone / 1024 / 1024 / 1024) + " GB (" + driveTotalBytes + " Bytes) in " + (ms / 1000 / 60) + " minutes. (" + ms + " ms)", selectedRow, 1);
                             enableGUI(true);
                             updateDriveUITask.cancel();
                         }
@@ -589,27 +594,32 @@ public class SqueakyForm extends javax.swing.JFrame {
                 userSettingThreads = jRadioButton3.isSelected() ? jSlider2.getValue() : (int) jSpinner1.getValue();
                 if (userSettingThreads > 3) {
                     JOptionPane.showMessageDialog(jFrame1, "At the moment, due to performance concerns, only 3 threads are allowed.", "Squeaky - Too many threads", JOptionPane.WARNING_MESSAGE);
-                    jSpinner1.setValue(3);
                     userSettingThreads = 3;
                 }
+                if (userSettingThreads == 0) {
+                    userSettingThreads++;
+                }
+                jSpinner1.setValue(userSettingThreads);
                 selectedRow = jTable2.getSelectedRow();
-                driveBytesDone = 0;
+                jTable2.setValueAt("Processing", selectedRow, 1);
                 OBJECT.startTimer();
                 File drive = (File) jTable2.getValueAt(selectedRow, 0);
                 try {
                     String x = drive.getCanonicalPath().replace("\\", "/");
                     driveTotalBytes = 1073741824;//drive.getUsableSpace();
-                    long threadBytes = driveTotalBytes / userSettingThreads;
+                    long threadBytes = (long) Math.ceil((double) driveTotalBytes / userSettingThreads);
                     for (int i = 0; i < userSettingThreads; i++) {
                         final int threadIndex = i;
                         final String driveDir = x;
                         Thread tempFileThread = new Thread(new Runnable() {
                             @Override
                             public void run() {
+                                ThreadLong tLong = new ThreadLong();
+                                THREADLONGS.add(tLong);
                                 try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(new File(driveDir + "Thread" + threadIndex)), 16384)) {
                                     for (int o = 0; o < threadBytes; o++) {
                                         threadWriter.write(0);
-                                        driveBytesDone++;
+                                        tLong.incrementBytes();
                                         if (stopFlag) {
                                             break;
                                         }
@@ -633,8 +643,10 @@ public class SqueakyForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton6ActionPerformed
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
         stopFlag = true;
+        jTable2.setValueAt("Aborted", selectedRow, 1);
         mainProcess.interrupt();
         resetAll();
+        updateDriveUITask.cancel();
         enableGUI(true);
     }//GEN-LAST:event_jButton7ActionPerformed
     private void handle(Exception ex) {
@@ -721,6 +733,7 @@ public class SqueakyForm extends javax.swing.JFrame {
     }
 
     private void resetAll() {
+        OBJECT.stopTimer();
         for (CountMS x : COUNTOBJECTS) {
             x.stopTimer();
         }
@@ -732,6 +745,7 @@ public class SqueakyForm extends javax.swing.JFrame {
         jProgressBar3.setValue(0);
         COUNTOBJECTS.clear();
         FILETHREADS.clear();
+        THREADLONGS.clear();
     }
 
     private void enableGUI(boolean b) {
@@ -756,7 +770,7 @@ public class SqueakyForm extends javax.swing.JFrame {
     }
 
     /**
-     * 
+     *
      * @param args the command line arguments
      */
     public static void main(String args[]) {
