@@ -618,12 +618,12 @@ public class SqueakyForm extends javax.swing.JFrame {
                 int noPasses = Integer.parseInt(jTextField3.getText().trim());
                 for (int i : jTable2.getSelectedRows()) {
                     selectedRow = i;
-                    for (int z = 1; z <= noPasses; z++) {                        
+                    for (int z = 1; z <= noPasses; z++) {
                         OBJECT.startTimer();
                         File drive = (File) jTable2.getValueAt(selectedRow, 0);
                         try {
                             String x = drive.getCanonicalPath().replace("\\", "/");
-                            driveTotalBytes = 25_00_00_000;//drive.getUsableSpace();
+                            driveTotalBytes = drive.getUsableSpace();
                             File tempFile = new File(x + "Wiper");
                             driveBytesDone = 0;
                             if (z == 1) {
