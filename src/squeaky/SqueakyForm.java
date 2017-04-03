@@ -22,23 +22,18 @@ public class SqueakyForm extends javax.swing.JFrame {
 
     private static File errorLog;
     private static JFileChooser chooser;
-    private static int mode = -1;
     private static Thread mainProcess;
     private static DefaultTableModel tableModel;
     private static DefaultTableModel driveModel;
     private static long indexBytes, indexBytesDone, driveBytesDone, driveTotalBytes;
-    private static int userSettingThreads, selectedRow;
+    private static int selectedRow = -1, mode = -1;
     private static TimerTask updateDriveUITask;
-    private static boolean stopFlag;
+    private static boolean stopFlag, processFlag;
     private static final String NEWLINE = System.getProperty("line.separator");
     private static final int FILE_SHRED_MODE = 1, DRIVE_WIPE_MODE = 2;
     private static final ArrayList<JComponent> FILEUIELEMENTS = new ArrayList<>(5);
     private static final ArrayList<JComponent> DRIVEUIELEMENTS = new ArrayList<>(5);
-    private static final ArrayList<JComponent> BASICUIELEMENTS = new ArrayList<>(5);
-    private static final ArrayList<JComponent> ADVANCEDUIELEMENTS = new ArrayList<>(5);
     private static final ArrayList<CountMS> COUNTOBJECTS = new ArrayList<>(5);
-    private static final ArrayList<Thread> FILETHREADS = new ArrayList<>(3);
-    private static final ArrayList<ThreadLong> THREADLONGS = new ArrayList<>(3);
     private static final java.util.Timer TIMER = new java.util.Timer();
     private static final CountMS OBJECT = new CountMS();
 
@@ -58,10 +53,7 @@ public class SqueakyForm extends javax.swing.JFrame {
         DRIVEUIELEMENTS.add(jTable2);
         DRIVEUIELEMENTS.add(jButton6);
         DRIVEUIELEMENTS.add(jProgressBar3);
-        BASICUIELEMENTS.add(jSlider2);
-        ADVANCEDUIELEMENTS.add(jSpinner1);
         jRadioButton1.doClick();
-        jRadioButton3.doClick();
         jFrame1.setTitle("Squeaky");
         jFrame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame1.setResizable(false);
@@ -105,16 +97,6 @@ public class SqueakyForm extends javax.swing.JFrame {
         jButton7 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        jRadioButton4 = new javax.swing.JRadioButton();
-        jSlider2 = new javax.swing.JSlider();
-        jLabel9 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
-        jLabel10 = new javax.swing.JLabel();
-        jSeparator3 = new javax.swing.JSeparator();
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
 
@@ -240,7 +222,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTable2.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jTable2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jScrollPane3.setViewportView(jTable2);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -343,97 +325,6 @@ public class SqueakyForm extends javax.swing.JFrame {
                 .addGap(5, 5, 5))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        jLabel7.setText("Settings");
-
-        jLabel8.setText("No. of Threads");
-
-        buttonGroup2.add(jRadioButton3);
-        jRadioButton3.setText("Basic settings");
-        jRadioButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton3ActionPerformed(evt);
-            }
-        });
-
-        buttonGroup2.add(jRadioButton4);
-        jRadioButton4.setText("Advanced Settings");
-        jRadioButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton4ActionPerformed(evt);
-            }
-        });
-
-        jSlider2.setMaximum(3);
-        jSlider2.setMinimum(1);
-        jSlider2.setPaintLabels(true);
-        jSlider2.setPaintTicks(true);
-        jSlider2.setSnapToTicks(true);
-        jSlider2.setValue(1);
-
-        jLabel9.setText("Process speed (Faster uses more memory)");
-
-        jLabel10.setText("Recommended lesser than or equal to 3");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel7)
-                .addGap(98, 98, 98))
-            .addComponent(jSeparator3)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jRadioButton4)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jRadioButton3)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                            .addComponent(jLabel9))))
-                .addContainerGap())
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jLabel7)
-                .addGap(3, 3, 3)
-                .addComponent(jRadioButton3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(139, 139, 139)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jRadioButton4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel10)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
         jFrame1.getContentPane().setLayout(jFrame1Layout);
         jFrame1Layout.setHorizontalGroup(
@@ -441,19 +332,13 @@ public class SqueakyForm extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jFrame1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jFrame1Layout.setVerticalGroup(
             jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jFrame1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(jFrame1Layout.createSequentialGroup()
-                        .addGap(0, 0, 0)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -494,14 +379,6 @@ public class SqueakyForm extends javax.swing.JFrame {
         enableDriveUIElements(true);
         enableFileUIElements(false);
     }//GEN-LAST:event_jRadioButton2ActionPerformed
-    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
-        enableAdvancedUIElements(false);
-        enableBasicUIElements(true);
-    }//GEN-LAST:event_jRadioButton3ActionPerformed
-    private void jRadioButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton4ActionPerformed
-        enableAdvancedUIElements(true);
-        enableBasicUIElements(false);
-    }//GEN-LAST:event_jRadioButton4ActionPerformed
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -542,7 +419,6 @@ public class SqueakyForm extends javax.swing.JFrame {
                     indexBytesDone = 0;
                     indexBytes = 0;
                     CountMS object = new CountMS();
-                    COUNTOBJECTS.add(object);
                     object.startTimer();
                     tableModel.setValueAt("Processing", i, 2);
                     String x = (String) jTable1.getValueAt(i, 1);
@@ -560,29 +436,31 @@ public class SqueakyForm extends javax.swing.JFrame {
         mainProcess.start();
     }//GEN-LAST:event_jButton4ActionPerformed
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        if (JOptionPane.showConfirmDialog(jFrame1, "Are you sure you want to abort?", "Squeaky - Confirm Action", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
-            try {
-                mainProcess.interrupt();
-            } catch (NullPointerException ex) {
+        if (mode == FILE_SHRED_MODE && processFlag) {
+            if (JOptionPane.showConfirmDialog(jFrame1, "Are you sure you want to abort?", "Squeaky - Confirm Action", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+                try {
+                    mainProcess.interrupt();
+                } catch (NullPointerException ex) {
+                }
+                resetAll();
+                processFlag = false;
             }
-            resetAll();
         }
     }//GEN-LAST:event_jButton5ActionPerformed
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         mainProcess = new Thread(new Runnable() {
             @Override
             public void run() {
+                processFlag = true;
                 enableGUI(false);
                 resetAll();
                 stopFlag = false;
                 updateDriveUITask = new TimerTask() {
                     @Override
                     public void run() {
-                        driveBytesDone = 0;
-                        for (ThreadLong x : THREADLONGS) {
-                            driveBytesDone += x.getBytes();
+                        if (driveTotalBytes > 0) {
+                            jProgressBar3.setValue((int) ((driveBytesDone * 100) / driveTotalBytes));
                         }
-                        jProgressBar3.setValue((int) (driveBytesDone * 100 / driveTotalBytes));
                         if (driveBytesDone >= driveTotalBytes) {
                             long ms = OBJECT.stopTimer();
                             jTable2.setValueAt("Cleared " + Double.toString(driveBytesDone / 1024 / 1024 / 1024) + " GB (" + driveTotalBytes + " Bytes) in " + (ms / 1000 / 60) + " minutes. (" + ms + " ms)", selectedRow, 1);
@@ -590,66 +468,52 @@ public class SqueakyForm extends javax.swing.JFrame {
                             updateDriveUITask.cancel();
                         }
                     }
-                };
-                userSettingThreads = jRadioButton3.isSelected() ? jSlider2.getValue() : (int) jSpinner1.getValue();
-                if (userSettingThreads > 3) {
-                    JOptionPane.showMessageDialog(jFrame1, "At the moment, due to performance concerns, only 3 threads are allowed.", "Squeaky - Too many threads", JOptionPane.WARNING_MESSAGE);
-                    userSettingThreads = 3;
-                }
-                if (userSettingThreads == 0) {
-                    userSettingThreads++;
-                }
-                jSpinner1.setValue(userSettingThreads);
-                selectedRow = jTable2.getSelectedRow();
-                jTable2.setValueAt("Processing", selectedRow, 1);
-                OBJECT.startTimer();
-                File drive = (File) jTable2.getValueAt(selectedRow, 0);
-                try {
-                    String x = drive.getCanonicalPath().replace("\\", "/");
-                    driveTotalBytes = drive.getUsableSpace();
-                    long threadBytes = (long) Math.ceil((double) driveTotalBytes / userSettingThreads);
-                    for (int i = 0; i < userSettingThreads; i++) {
-                        final int threadIndex = i;
-                        final String driveDir = x;
-                        Thread tempFileThread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ThreadLong tLong = new ThreadLong();
-                                THREADLONGS.add(tLong);
-                                File tempFile = new File(driveDir + "Thread" + threadIndex);
-                                try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile), 16384)) {
-                                    for (int o = 0; o < threadBytes; o++) {
-                                        threadWriter.write(0);
-                                        tLong.incrementBytes();
-                                        if (stopFlag) {
-                                            break;
-                                        }
-                                    }
-                                    tempFile.delete();
-                                } catch (IOException ex) {
-                                    handle(ex);
+                };                
+                for (int i : jTable2.getSelectedRows()) {
+                    selectedRow = i;
+                    driveBytesDone = 0;
+                    jTable2.setValueAt("Processing", selectedRow, 1);
+                    OBJECT.startTimer();
+                    File drive = (File) jTable2.getValueAt(selectedRow, 0);
+                    try {
+                        String x = drive.getCanonicalPath().replace("\\", "/");
+                        driveTotalBytes = drive.getUsableSpace();
+                        File tempFile = new File(x + "Wiper");
+                        TIMER.scheduleAtFixedRate(updateDriveUITask, 0, 5);
+                        try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile), 16384)) {
+                            for (int o = 0; o < driveTotalBytes; o++) {
+                                if (stopFlag) {
+                                    break;
                                 }
+                                threadWriter.write(0);
+                                driveBytesDone++;
                             }
-                        });
-                        tempFileThread.setName("Thread " + i);
-                        FILETHREADS.add(tempFileThread);
-                        tempFileThread.start();
+                            tempFile.delete();
+                        }
+                    } catch (IOException ex) {
+                        handle(ex);
                     }
-                } catch (IOException ex) {
-                    handle(ex);
                 }
-                TIMER.scheduleAtFixedRate(updateDriveUITask, 0, 5);
+                processFlag = false;
             }
         });
         mainProcess.start();
     }//GEN-LAST:event_jButton6ActionPerformed
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        stopFlag = true;
-        jTable2.setValueAt("Aborted", selectedRow, 1);
-        mainProcess.interrupt();
-        resetAll();
-        updateDriveUITask.cancel();
-        enableGUI(true);
+        if (mode == DRIVE_WIPE_MODE && processFlag) {
+            try {
+                stopFlag = true;
+                if (selectedRow != -1) {
+                    jTable2.setValueAt("Aborted", selectedRow, 1);
+                }
+                mainProcess.interrupt();
+                resetAll();
+                updateDriveUITask.cancel();
+            } catch (NullPointerException ex) {
+            }
+            enableGUI(true);
+            processFlag = false;
+        }
     }//GEN-LAST:event_jButton7ActionPerformed
     private void handle(Exception ex) {
         try {
@@ -712,18 +576,6 @@ public class SqueakyForm extends javax.swing.JFrame {
         }
     }
 
-    private void enableBasicUIElements(boolean b) {
-        for (JComponent x : BASICUIELEMENTS) {
-            x.setEnabled(b);
-        }
-    }
-
-    private void enableAdvancedUIElements(boolean b) {
-        for (JComponent x : ADVANCEDUIELEMENTS) {
-            x.setEnabled(b);
-        }
-    }
-
     private void estimateIndexSize(File a) {
         if (a.isDirectory()) {
             for (File x : a.listFiles()) {
@@ -739,15 +591,11 @@ public class SqueakyForm extends javax.swing.JFrame {
         for (CountMS x : COUNTOBJECTS) {
             x.stopTimer();
         }
-        for (Thread x : FILETHREADS) {
-            x.interrupt();
-        }
         jProgressBar1.setValue(0);
         jProgressBar2.setValue(0);
         jProgressBar3.setValue(0);
         COUNTOBJECTS.clear();
-        FILETHREADS.clear();
-        THREADLONGS.clear();
+        driveBytesDone = 0;
     }
 
     private void enableGUI(boolean b) {
@@ -759,16 +607,8 @@ public class SqueakyForm extends javax.swing.JFrame {
         if (jRadioButton2.isSelected()) {
             enableDriveUIElements(b);
         }
-        if (jRadioButton3.isSelected()) {
-            enableBasicUIElements(b);
-        }
-        if (jRadioButton4.isSelected()) {
-            enableAdvancedUIElements(b);
-        }
         jRadioButton1.setEnabled(b);
         jRadioButton2.setEnabled(b);
-        jRadioButton3.setEnabled(b);
-        jRadioButton4.setEnabled(b);
     }
 
     /**
@@ -777,7 +617,7 @@ public class SqueakyForm extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         try {
-            javax.swing.UIManager.setLookAndFeel("com.alee.laf.WebLookAndFeel");
+            javax.swing.UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             JOptionPane.showMessageDialog(null, "An error occured while initiating UI.\n" + ex.getMessage() + "\nPlease check integrity of files", "Squeaky - Fatal Error", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
@@ -801,30 +641,20 @@ public class SqueakyForm extends javax.swing.JFrame {
     private javax.swing.JButton jButton7;
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JProgressBar jProgressBar2;
     private javax.swing.JProgressBar jProgressBar3;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSlider jSlider2;
-    private javax.swing.JSpinner jSpinner1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
     private javax.swing.JTextField jTextField1;
