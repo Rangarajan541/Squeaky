@@ -17,12 +17,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-
 /**
  * * * * @author Rangarajan
  */
 public class SqueakyForm extends javax.swing.JFrame {
-    
+
     private static File errorLog;
     private static JFileChooser chooser;
     private static Thread mainProcess;
@@ -42,7 +41,7 @@ public class SqueakyForm extends javax.swing.JFrame {
 
     public SqueakyForm() {
         initComponents();
-        
+
         URL iconURL = getClass().getResource("Images/IconImage.png");
         ImageIcon icon = new ImageIcon(iconURL);
         jFrame1.setIconImage(icon.getImage());
@@ -63,11 +62,17 @@ public class SqueakyForm extends javax.swing.JFrame {
         DRIVEUIELEMENTS.add(jTextField3);
         jRadioButton1.doClick();
 
+        jFrame1.setTitle("Squeaky");
+        jFrame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jFrame1.setResizable(false);
+        jFrame1.pack();
+        jFrame1.setLocationRelativeTo(null);
+        jFrame1.setVisible(true);
+
         int a = (jTable2.getColumnModel().getColumn(0).getWidth());
         int b = (jTable2.getColumnModel().getColumn(1).getWidth());
         int x = (int) (0.8 * (a + b));
         jTable2.getColumnModel().getColumn(1).setPreferredWidth(x);
-
         a = (jTable1.getColumnModel().getColumn(0).getWidth());
         b = (jTable1.getColumnModel().getColumn(1).getWidth());
         int c = (jTable1.getColumnModel().getColumn(2).getWidth());
@@ -76,12 +81,7 @@ public class SqueakyForm extends javax.swing.JFrame {
         x = (int) (0.2 * (a + b + c));
         jTable1.getColumnModel().getColumn(1).setPreferredWidth(x);
 
-        jFrame1.setTitle("Squeaky");
-        jFrame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jFrame1.setResizable(false);
-        jFrame1.pack();
-        jFrame1.setLocationRelativeTo(null);
-        jFrame1.setVisible(true);
+        jButton8.doClick();
     }
 
     /**
@@ -617,7 +617,9 @@ public class SqueakyForm extends javax.swing.JFrame {
                     }
                 };
                 int noPasses = Integer.parseInt(jTextField3.getText().trim());
+                boolean firstFlag = true;
                 for (int i : jTable2.getSelectedRows()) {
+                    jTable2.clearSelection();
                     selectedRow = i;
                     for (int z = 1; z <= noPasses; z++) {
                         OBJECT.startTimer();
@@ -627,21 +629,27 @@ public class SqueakyForm extends javax.swing.JFrame {
                             driveTotalBytes = drive.getUsableSpace();
                             File tempFile = new File(x + "Wiper");
                             driveBytesDone = 0;
-                            if (z == 1) {
+                            if (firstFlag) {
                                 driveBytesDone = continueFlag ? tempFile.length() : 0;
                                 TIMER.scheduleAtFixedRate(updateDriveUITask, 0, 5);
                             }
                             int bufferedSize = Integer.parseInt(jTextField2.getText().trim()) * 1024;
                             jTable2.setValueAt("Processing (Pass " + z + " of " + noPasses + ")", selectedRow, 1);
                             try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile, continueFlag), bufferedSize)) {
-
                                 for (int o = 0; o < driveTotalBytes; o++) {
-                                    if (stopFlag) {
-
+                                   if (stopFlag) {
                                         break;
                                     }
-                                    threadWriter.write(0);
-                                    driveBytesDone++;
+                                    try {
+                                        threadWriter.write(0);
+                                        driveBytesDone++;
+                                    } catch (IOException ex1) {
+                                        if (!ex1.getMessage().toLowerCase().contains("space")) {
+                                            handle(ex1);
+                                        } else {
+                                            break;
+                                        }
+                                    }
                                 }
                                 if (!stopFlag) {
                                     tempFile.delete();
@@ -652,6 +660,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                         } catch (IOException ex) {
                             handle(ex);
                         }
+                        firstFlag = false;
                     }
                 }
                 updateDriveUITask.cancel();
@@ -708,6 +717,8 @@ public class SqueakyForm extends javax.swing.JFrame {
                 if (!path.createNewFile()) {
                     throw new IOException();
                 }
+            } else {
+                new FileWriter(path, true).write(System.getProperty("line.separator") + "Started");
             }
             JOptionPane.showMessageDialog(jFrame1, "Test successful", "Squeaky - Error Log", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {
@@ -739,7 +750,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                 errorWriter.write(NEWLINE + "___________________" + NEWLINE);
             }
         } catch (IOException ex1) {
-            System.exit(0);
+            JOptionPane.showMessageDialog(jFrame1, "Please browse error log to different location, or run as administrator.", "Squeaky - Error Log invalid", JOptionPane.ERROR_MESSAGE);
         }
     }
 
