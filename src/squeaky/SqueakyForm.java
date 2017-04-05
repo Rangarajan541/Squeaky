@@ -636,7 +636,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                             int bufferedSize = Integer.parseInt(jTextField2.getText().trim()) * 1024;
                             jTable2.setValueAt("Processing (Pass " + z + " of " + noPasses + ")", selectedRow, 1);
                             try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile, continueFlag), bufferedSize)) {
-                                for (int o = 0; o < driveTotalBytes; o++) {
+                                for (long o = 0; o < driveTotalBytes; o++) {
                                     if (stopFlag) {
                                         break;
                                     }
@@ -644,13 +644,15 @@ public class SqueakyForm extends javax.swing.JFrame {
                                         threadWriter.write(0);
                                         driveBytesDone++;
                                     } catch (IOException ex1) {
-                                        if (!ex1.getMessage().equals("There is not enough space on the disk")) {
-                                            handle(ex1);
-                                        } else {
+                                        if (ex1.getMessage().toLowerCase().contains("not enough space")) {
+                                            System.out.println("error enc " + z);
                                             break;
+                                        } else {
+                                            handle(ex1);
                                         }
                                     }
                                 }
+                                System.out.println("before stopflag check " + z);
                                 if (!stopFlag) {
                                     threadWriter.close();
                                     if (!tempFile.delete()) {
