@@ -1,7 +1,7 @@
 # Squeaky
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
-* Latest version  : v1.1
+* Latest version  : v1.2 Stable
 
 ## What it is:
 A User friendly, lightweight, efficient, fast, configurable program to securely erase files.
