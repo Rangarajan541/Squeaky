@@ -637,14 +637,14 @@ public class SqueakyForm extends javax.swing.JFrame {
                             jTable2.setValueAt("Processing (Pass " + z + " of " + noPasses + ")", selectedRow, 1);
                             try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile, continueFlag), bufferedSize)) {
                                 for (int o = 0; o < driveTotalBytes; o++) {
-                                   if (stopFlag) {
+                                    if (stopFlag) {
                                         break;
                                     }
                                     try {
                                         threadWriter.write(0);
                                         driveBytesDone++;
                                     } catch (IOException ex1) {
-                                        if (!ex1.getMessage().toLowerCase().contains("space")) {
+                                        if (!ex1.getMessage().equals("There is not enough space on the disk")) {
                                             handle(ex1);
                                         } else {
                                             break;
@@ -652,7 +652,10 @@ public class SqueakyForm extends javax.swing.JFrame {
                                     }
                                 }
                                 if (!stopFlag) {
-                                    tempFile.delete();
+                                    threadWriter.close();
+                                    if (!tempFile.delete()) {
+                                        throw new IOException("Please run as administrator.");
+                                    }
                                 }
                                 long ms = OBJECT.stopTimer();
                                 jTable2.setValueAt("Cleared " + Double.toString(driveBytesDone / 1024.0 / 1024.0 / 1024.0) + " GB (" + driveBytesDone + " Bytes) in " + (ms / 1000.0 / 60.0) + " minutes. (" + ms + " ms)", selectedRow, 1);
