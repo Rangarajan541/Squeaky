@@ -1,6 +1,6 @@
 # Squeaky
 
-[SqueakyLogo](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLargeBlack.png)
+![SqueakyLogo](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLargeBlack.png)
 
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
