@@ -1,8 +1,10 @@
 package squeaky;
 
 import java.awt.HeadlessException;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -561,38 +563,43 @@ public class SqueakyForm extends javax.swing.JFrame {
         if (index > -1) {
             tableModel.removeRow(index);
         } else {
-            JOptionPane.showMessageDialog(jFrame1, "You need to select a file", "No file Selected", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(jFrame1, "You need to select a file", "Squeaky - No file Selected", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButton3ActionPerformed
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        mainProcess = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                enableGUI(false);
-                stopFlag = false;
-                processFlag = true;
-                resetAll();
-                int totalIndex = jTable1.getRowCount();
-                for (int i = 0; i < totalIndex; i++) {
-                    indexBytesDone = 0;
-                    CountMS object = new CountMS();
-                    object.startTimer();
-                    tableModel.setValueAt("Processing", i, 2);
-                    String x = (String) jTable1.getValueAt(i, 1);
-                    if (x != null) {
-                        File y = new File(x);
-                        deleteFile(y);
+        int totalIndex = jTable1.getRowCount();
+        if (totalIndex == 0) {
+            return;
+        }
+        if (JOptionPane.showConfirmDialog(jFrame1, "Are you sure? all selected files will be permanently deleted, beyond recovery.", "Squeaky - Confirm action", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+            mainProcess = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    enableGUI(false);
+                    stopFlag = false;
+                    processFlag = true;
+                    resetAll();
+                    for (int i = 0; i < totalIndex; i++) {
+                        indexBytesDone = 0;
+                        CountMS object = new CountMS();
+                        object.startTimer();
+                        tableModel.setValueAt("Processing", i, 2);
+                        String x = (String) jTable1.getValueAt(i, 1);
+                        if (x != null) {
+                            File y = new File(x);
+                            deleteFile(y);
+                        }
+                        tableModel.setValueAt("Cleared " + (indexBytesDone / 1024.0 / 1024.0) + " MB (" + indexBytesDone + " bytes) in " + object.stopTimer() + " ms", i, 2);
+                        if (stopFlag) {
+                            break;
+                        }
+                        jProgressBar2.setValue((i + 1) * 100 / totalIndex);
                     }
-                    tableModel.setValueAt("Cleared " + (indexBytesDone / 1024.0 / 1024.0) + " MB (" + indexBytesDone + " bytes) in " + object.stopTimer() + " ms", i, 2);
-                    if (stopFlag) {
-                        break;
-                    }
-                    jProgressBar2.setValue((i + 1) * 100 / totalIndex);
+                    enableGUI(true);
                 }
-                enableGUI(true);
-            }
-        });
-        mainProcess.start();
+            });
+            mainProcess.start();
+        }
     }//GEN-LAST:event_jButton4ActionPerformed
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
 
@@ -632,10 +639,12 @@ public class SqueakyForm extends javax.swing.JFrame {
                             if (firstFlag) {
                                 driveBytesDone = continueFlag ? tempFile.length() : 0;
                                 TIMER.scheduleAtFixedRate(updateDriveUITask, 0, 5);
+                            } else {
+                                tempFile.delete();
                             }
                             int bufferedSize = Integer.parseInt(jTextField2.getText().trim()) * 1024;
                             jTable2.setValueAt("Processing (Pass " + z + " of " + noPasses + ")", selectedRow, 1);
-                            try (BufferedWriter threadWriter = new BufferedWriter(new FileWriter(tempFile, continueFlag), bufferedSize)) {
+                            try (BufferedOutputStream threadWriter = new BufferedOutputStream(new FileOutputStream(tempFile, continueFlag), bufferedSize)) {
                                 for (long o = 0; o < driveTotalBytes; o++) {
                                     if (stopFlag) {
                                         break;
@@ -645,22 +654,26 @@ public class SqueakyForm extends javax.swing.JFrame {
                                         driveBytesDone++;
                                     } catch (IOException ex1) {
                                         if (ex1.getMessage().toLowerCase().contains("not enough space")) {
-                                            System.out.println("error enc " + z);
                                             break;
                                         } else {
                                             handle(ex1);
                                         }
                                     }
                                 }
-                                System.out.println("before stopflag check " + z);
                                 if (!stopFlag) {
-                                    threadWriter.close();
+                                    try {
+                                        threadWriter.close();
+                                    } catch (IOException ex2) {
+                                        if (!ex2.getMessage().toLowerCase().contains("not enough space")) {
+                                            handle(ex2);
+                                        }
+                                    }
                                     if (!tempFile.delete()) {
                                         throw new IOException("Please run as administrator.");
                                     }
                                 }
                                 long ms = OBJECT.stopTimer();
-                                jTable2.setValueAt("Cleared " + Double.toString(driveBytesDone / 1024.0 / 1024.0 / 1024.0) + " GB (" + driveBytesDone + " Bytes) in " + (ms / 1000.0 / 60.0) + " minutes. (" + ms + " ms)", selectedRow, 1);
+                                jTable2.setValueAt("Cleared " + Double.toString(driveBytesDone / 1024.0 / 1024.0 / 1024.0) + " GB (" + driveBytesDone + " Bytes) in " + (ms / 1000.0 / 60.0) + " minutes. (" + ms + " ms) Pass(" + z + "/" + noPasses + ")", selectedRow, 1);
                             }
                         } catch (IOException ex) {
                             handle(ex);
@@ -744,7 +757,7 @@ public class SqueakyForm extends javax.swing.JFrame {
             errorLog = new File(jTextField1.getText());
             errorLog.getParentFile().mkdirs();
             if (!errorLog.exists() && !errorLog.createNewFile()) {
-                JOptionPane.showMessageDialog(jFrame1, "Cannot access specified location.\nRun as administrator or select different location.", "Unable to create error log", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jFrame1, "Cannot access specified location.\nRun as administrator or select different location.", "Squeaky - Unable to create error log", JOptionPane.ERROR_MESSAGE);
             }
             try (BufferedWriter errorWriter = new BufferedWriter(new FileWriter(errorLog, true))) {
                 SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY hh:mm:ss");
