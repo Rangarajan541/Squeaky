@@ -1,3 +1,4 @@
+![alt tag](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImage.png)
 # Squeaky
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
