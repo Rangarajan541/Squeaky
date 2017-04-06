@@ -1,9 +1,11 @@
-<p align="center">![alt tag](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLargeBlack.png)</p>
+<center>
 # Squeaky
+![alt tag](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLargeBlack.png)
+
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
 * Latest version  : Check Release Page
-
+</center>
 ## What it is:
 A User friendly, lightweight, efficient, fast, configurable program to securely erase files.
 
