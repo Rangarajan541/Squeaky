@@ -1,4 +1,4 @@
-![alt tag](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLarge.png)
+<p align="center">![alt tag](https://github.com/Rangarajan541/Squeaky/blob/master/src/squeaky/Images/IconImageLargeBlack.png)</p>
 # Squeaky
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
