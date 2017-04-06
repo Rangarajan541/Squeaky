@@ -1,7 +1,7 @@
 # Squeaky
 * Author          : Rangarajan 
 * Contact         : rajanranga541@gmail.com
-* Latest version  : v1.2 Stable
+* Latest version  : Check Release Page
 
 ## What it is:
 A User friendly, lightweight, efficient, fast, configurable program to securely erase files.
@@ -11,9 +11,8 @@ A User friendly, lightweight, efficient, fast, configurable program to securely 
 1. Drive Wiper mode to wipe entire drives.
 1. Configurable buffer size.
 1. Continues aborted operations.
-1. Accurate time display.
-1. Constant indication of what's happening.
 1. Configurable number of passes.
+1. Constant indication of what's happening.
 1. Smooth error handling.
 
 ### What you need:
