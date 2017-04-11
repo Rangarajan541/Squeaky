@@ -660,7 +660,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                         int bufferedSize = Integer.parseInt(jTextField2.getText().trim()) * 1024;
                         try (BufferedOutputStream threadWriter = new BufferedOutputStream(new FileOutputStream(tempFile, continueFlag), bufferedSize)) {
                             jTable2.setValueAt("Processing (Pass " + z + " of " + noPasses + ")", selectedRow, 1);
-                            for (long o = 0; o < driveTotalBytes; o++) {
+                            for (long o = 0; o < driveTotalBytes - (driveTotalBytes % bufferedSize); o++) {
                                 if (stopFlag) {
                                     break;
                                 }
@@ -675,14 +675,23 @@ public class SqueakyForm extends javax.swing.JFrame {
                                     }
                                 }
                             }
-                            if (!stopFlag) {
-                                try {
-                                    threadWriter.close();
-                                } catch (IOException ex2) {
-                                    if (!ex2.getMessage().toLowerCase().contains("not enough space")) {
-                                        handle(ex2);
+                            try (FileOutputStream fout = new FileOutputStream(tempFile, true);) {
+                                for (long o = 0; o < driveTotalBytes % bufferedSize; o++) {
+                                    if (stopFlag) {
+                                        break;
                                     }
+                                    fout.write(0);
+                                    driveBytesDone++;
                                 }
+
+                            } catch (IOException ex3) {
+                                if (ex3.getMessage().toLowerCase().contains("not enough space")) {
+                                    break;
+                                } else {
+                                    handle(ex3);
+                                }
+                            }
+                            if (!stopFlag) {
                                 if (!tempFile.delete()) {
                                     throw new IOException("Please run as administrator.");
                                 }
