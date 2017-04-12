@@ -62,6 +62,8 @@ public class SqueakyForm extends javax.swing.JFrame {
         DRIVEUIELEMENTS.add(jTextField3);
         DRIVEUIELEMENTS.add(jButton5);
         jRadioButton1.doClick();
+        
+        jTextArea2.append("\n\nTheoretically, assuming you have sufficient memory, the max possible value is "+Integer.toString(Integer.MAX_VALUE/1024));
 
         jFrame1.setTitle("Squeaky");
         jFrame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -675,6 +677,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                                     }
                                 }
                             }
+                            threadWriter.close();
                             try (FileOutputStream fout = new FileOutputStream(tempFile, true);) {
                                 for (long o = 0; o < driveTotalBytes % bufferedSize; o++) {
                                     if (stopFlag) {
@@ -683,7 +686,7 @@ public class SqueakyForm extends javax.swing.JFrame {
                                     fout.write(0);
                                     driveBytesDone++;
                                 }
-
+                                fout.close();                                
                             } catch (IOException ex3) {
                                 if (ex3.getMessage().toLowerCase().contains("not enough space")) {
                                     break;
